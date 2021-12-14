@@ -4,8 +4,8 @@ import { NamespaceFixer } from "./NamespaceFixer.js";
 import { preProcess } from "./preprocess.js";
 import { convert } from "./Transformer.js";
 import * as path from "path";
-
-export interface TransformOptions {}
+import { GlobalNamespaceExporter } from "./GlobalNamespaceExporter.js";
+import { Options } from "../index.js";
 
 function parse(fileName: string, code: string): ts.SourceFile {
   return ts.createSourceFile(fileName, code, ts.ScriptTarget.Latest, true);
@@ -29,7 +29,7 @@ function parse(fileName: string, code: string): ts.SourceFile {
  *    the postprocess convert any javascript code that was created for namespace
  *    exports into TypeScript namespaces. See `NamespaceFixer.ts`.
  */
-export const transform: PluginImpl<TransformOptions> = () => {
+export const transform: PluginImpl<Options> = () => {
   const allTypeReferences = new Map<string, Set<string>>();
   const allFileReferences = new Map<string, Set<string>>();
 
@@ -95,8 +95,10 @@ export const transform: PluginImpl<TransformOptions> = () => {
     },
 
     renderChunk(code, chunk, options) {
-      const source = parse(chunk.fileName, code);
-      const fixer = new NamespaceFixer(source);
+      const fixer = new NamespaceFixer(parse(chunk.fileName, code));
+      code = fixer.fix();
+      const fixer2 = new GlobalNamespaceExporter(parse(chunk.fileName, code));
+      code = fixer2.fix();
 
       const typeReferences = new Set<string>();
       const fileReferences = new Set<string>();
