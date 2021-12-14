@@ -69,6 +69,7 @@ export function preProcess({ sourceFile }: PreProcessInput): PreProcessOutput {
       ts.isModuleDeclaration(node)
     ) {
       // collect the declared name
+      let isExported = false;
       if (node.name) {
         const name = node.name.getText();
         declaredNames.add(name);
@@ -78,6 +79,7 @@ export function preProcess({ sourceFile }: PreProcessInput): PreProcessOutput {
           defaultExport = name;
         } else if (matchesModifier(node, ts.ModifierFlags.Export)) {
           exportedNames.add(name);
+          isExported = true;
         }
         if (!(node.flags & ts.NodeFlags.GlobalAugmentation)) {
           pushNamedNode(name, [getStart(node), getEnd(node)]);
@@ -89,7 +91,7 @@ export function preProcess({ sourceFile }: PreProcessInput): PreProcessOutput {
         duplicateExports(code, node);
       }
 
-      fixModifiers(code, node);
+      fixModifiers(code, node, isExported);
     } else if (ts.isVariableStatement(node)) {
       const { declarations } = node.declarationList;
       // collect all the names, also check if they are exported
@@ -104,7 +106,7 @@ export function preProcess({ sourceFile }: PreProcessInput): PreProcessOutput {
         }
       }
 
-      fixModifiers(code, node);
+      fixModifiers(code, node, isExport);
 
       // collect the ranges for re-ordering
       if (declarations.length == 1) {
@@ -296,7 +298,7 @@ export function preProcess({ sourceFile }: PreProcessInput): PreProcessOutput {
   }
 }
 
-function fixModifiers(code: MagicString, node: ts.Node) {
+function fixModifiers(code: MagicString, node: ts.Node, isExported: boolean) {
   // remove the `export` and `default` modifier, add a `declare` if its missing.
   let hasDeclare = false;
   const needsDeclare =
@@ -306,7 +308,12 @@ function fixModifiers(code: MagicString, node: ts.Node) {
     ts.isVariableStatement(node);
   for (const mod of node.modifiers ?? []) {
     switch (mod.kind) {
-      case ts.SyntaxKind.ExportKeyword: // fall through
+      case ts.SyntaxKind.ExportKeyword:
+        if (!isExported) {
+          // TODO: be careful about that `+ 1`
+          code.remove(mod.getStart(), mod.getEnd() + 1);
+        }
+        break;
       case ts.SyntaxKind.DefaultKeyword:
         // TODO: be careful about that `+ 1`
         code.remove(mod.getStart(), mod.getEnd() + 1);
