@@ -170,6 +170,30 @@ export class NamespaceFixer {
     return { namespaces, itemTypes: items };
   }
 
+  private toNestedExportedName(localName: string, namespaces: Array<Namespace>): string {
+    let fullName = [];
+    while (localName) {
+      let found = false;
+      for (const ns of namespaces) {
+        const exp = ns.exports.find(exp => exp.localName === localName);
+        if (exp) {
+          fullName.unshift(exp.exportedName);
+          localName = ns.name;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        break;
+      }
+    }
+    return fullName.join(".") || localName;
+  }
+
+  private isNamespaceExport(exp: Export, namespaces: Array<Namespace>) {
+    return namespaces.some(ns => ns.name === exp.localName);
+  }
+
   public fix() {
     let code = this.sourceFile.getFullText();
 
@@ -197,19 +221,38 @@ export class NamespaceFixer {
           }
         }
       }
-      if (ns.name) {
-        code += `declare namespace ${ns.name} {\n`;
-        code += `  export {\n`;
-        for (const { exportedName, localName } of ns.exports) {
-          if (exportedName === localName) {
-            code += `    ${ns.name}_${exportedName} as ${exportedName},\n`;
-          } else {
-            code += `    ${localName} as ${exportedName},\n`;
+      // if (ns.name) {
+      //   code += `declare namespace ${ns.name} {\n`;
+      //   code += `  export {\n`;
+      //   for (const { exportedName, localName } of ns.exports) {
+      //     if (exportedName === localName) {
+      //       code += `    ${ns.name}_${exportedName} as ${exportedName},\n`;
+      //     } else {
+      //       code += `    ${localName} as ${exportedName},\n`;
+      //     }
+      //   }
+
+      //   code += `  };\n`;
+      //   code += `}\n`;
+      // }
+
+      if (ns.name && ns.exports.some(exp => !this.isNamespaceExport(exp, namespaces))) {
+        code += `declare global {\n`;
+        code += `  namespace ${this.toNestedExportedName(ns.name, namespaces)} {\n`;
+        code += `     export {\n`;
+        for (const exp of ns.exports) {
+          if (!this.isNamespaceExport(exp, namespaces)) {
+            if (exp.exportedName === exp.localName) {
+              code += `      ${ns.name}_${exp.exportedName} as ${exp.exportedName},\n`;
+            } else {
+              code += `      ${exp.localName} as ${exp.exportedName},\n`;
+            }
           }
         }
 
-        code += `  };\n`;
-        code += `}`;
+        code += `    };\n`;
+        code += `  }\n`;
+        code += `}\n`;
       }
 
       code += codeAfter;
