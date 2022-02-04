@@ -1,6 +1,6 @@
 {
   "name": "rollup-plugin-dts",
-  "version": "4.1.0",
+  "version": "4.1.0-ion1",
   "description": "A rollup plugin that will bundle up your .d.ts definition files.",
   "keywords": [
     "rollup-plugin",
@@ -39,7 +39,7 @@
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
     "build": "tsc && rollup -c .build/rollup.config.js",
-    "prepublishOnly": "npm run test",
+    "--prepublishOnly": "npm run test",
     "pretest": "npm run build",
     "test": "c8 node .build/tests/index.js"
   },
