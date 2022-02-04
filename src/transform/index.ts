@@ -117,9 +117,9 @@ export const transform: PluginImpl<Options> = () => {
         }
       }
 
-      code = writeBlock(Array.from(fileReferences, (ref) => `/// <reference path="${ref}" />`));
-      code += writeBlock(Array.from(typeReferences, (ref) => `/// <reference types="${ref}" />`));
-      code += fixer.fix();
+      code = writeBlock(Array.from(fileReferences, (ref) => `/// <reference path="${ref}" />`))  
+           + writeBlock(Array.from(typeReferences, (ref) => `/// <reference types="${ref}" />`))
+           + code;
 
       return { code, map: { mappings: "" } };
     },
