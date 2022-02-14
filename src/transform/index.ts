@@ -29,7 +29,8 @@ function parse(fileName: string, code: string): ts.SourceFile {
  *    the postprocess convert any javascript code that was created for namespace
  *    exports into TypeScript namespaces. See `NamespaceFixer.ts`.
  */
-export const transform: PluginImpl<Options> = () => {
+export const transform: PluginImpl<Options> = (dtsOptions) => {
+  dtsOptions = dtsOptions || {};
   const allTypeReferences = new Map<string, Set<string>>();
   const allFileReferences = new Map<string, Set<string>>();
 
@@ -97,8 +98,10 @@ export const transform: PluginImpl<Options> = () => {
     renderChunk(code, chunk, options) {
       const fixer = new NamespaceFixer(parse(chunk.fileName, code));
       code = fixer.fix();
-      const fixer2 = new GlobalNamespaceExporter(parse(chunk.fileName, code));
-      code = fixer2.fix();
+      if (dtsOptions!.exportAsGlobalNamespace) {
+        const fixer2 = new GlobalNamespaceExporter(parse(chunk.fileName, code));
+        code = fixer2.fix();
+      }
 
       const typeReferences = new Set<string>();
       const fileReferences = new Set<string>();

@@ -20,6 +20,11 @@ export interface Options {
    * `baseUrl` and `paths` properties, you can pass in `compilerOptions`.
    */
   compilerOptions?: ts.CompilerOptions;
+
+  /**
+   * If set, export the .d.ts as an ambient module declaration (`global`).
+   */
+  exportAsGlobalNamespace?: boolean;
 }
 
 const plugin: PluginImpl<Options> = (options = {}) => {
