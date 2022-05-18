@@ -133,7 +133,7 @@ export class GlobalNamespaceExporter {
                         const originalDeclaration = declarations.get(exp.exportedName);
                         if (originalDeclaration && originalDeclaration.length === 1) {
                             const varStatement = originalDeclaration[0] as ts.VariableStatement;
-                            const token = varStatement.declarationList.getFirstToken();
+                            const token = varStatement?.declarationList?.getFirstToken();
                             if (token?.kind === ts.SyntaxKind.LetKeyword) {
                                 specifier = "let";
                             }
