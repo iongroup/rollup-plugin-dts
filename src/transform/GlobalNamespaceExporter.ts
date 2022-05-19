@@ -165,6 +165,9 @@ export class GlobalNamespaceExporter {
             this.code.remove(stmt.getStart(), stmt.getEnd());
         }
 
-        return this.code.toString();
+        const ret = this.code.toString();
+        // Add back an empty export { } to avoid TS2669 error when there are no export in the .d.ts
+        // https://stackoverflow.com/questions/57132428/augmentations-for-the-global-scope-can-only-be-directly-nested-in-external-modul
+        return ret + "\nexport { }\n";
     }
 }
