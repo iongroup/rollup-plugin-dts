@@ -145,6 +145,7 @@ export class GlobalNamespaceExporter {
             }
         }
 
+        let hasExports = false;
         for (const exp of exports) {
             for (const node of this.sourceFile.statements as ts.NodeArray<ts.Statement & { $isExported?: boolean }>) {
                 const name = (node as unknown as ts.NamedDeclaration).name;
@@ -156,6 +157,7 @@ export class GlobalNamespaceExporter {
                 if (name.getText() === exp.exportedName && !node.$isExported && ts.isClassDeclaration(node)) {
                     this.code.appendLeft(node.getStart(), "export ");
                     (node as ts.Statement & { $isExported?: boolean }).$isExported = true;
+                    hasExports = true;
                 }
             }
         }
@@ -165,9 +167,14 @@ export class GlobalNamespaceExporter {
             this.code.remove(stmt.getStart(), stmt.getEnd());
         }
 
-        const ret = this.code.toString();
-        // Add back an empty export { } to avoid TS2669 error when there are no export in the .d.ts
-        // https://stackoverflow.com/questions/57132428/augmentations-for-the-global-scope-can-only-be-directly-nested-in-external-modul
-        return ret + "\nexport { }\n";
+        let ret = this.code.toString();
+
+        if (!hasExports) {
+            // Add back an empty export { } to avoid TS2669 error when there are no export in the .d.ts
+            // https://stackoverflow.com/questions/57132428/augmentations-for-the-global-scope-can-only-be-directly-nested-in-external-modul
+            ret += "\nexport { }\n";
+        }
+
+        return ret;
     }
 }
