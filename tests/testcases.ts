@@ -44,6 +44,7 @@ interface Meta {
   skip: boolean;
   expectedError?: string;
   tsVersion?: string;
+  singlePass?: boolean;
 }
 
 async function createBundle(options: Options, rollupOptions: RollupOptions) {
@@ -84,7 +85,7 @@ function clean(code: string = "") {
 }
 
 async function assertTestcase(dir: string, meta: Meta, bless: boolean) {
-  const { expectedError, options, rollupOptions } = meta;
+  const { expectedError, options, rollupOptions, singlePass } = meta;
 
   const input = withInput(dir, rollupOptions);
   const creator = createBundle(options, { ...rollupOptions, input });
@@ -127,7 +128,7 @@ async function assertTestcase(dir: string, meta: Meta, bless: boolean) {
   assert.strictEqual(code, expectedCode);
   // expect(String(map)).toEqual(await fsExtra.readFile(expectedMap, "utf-8"));
 
-  if (hasExpected && !hasMultipleOutputs) {
+  if (hasExpected && !hasMultipleOutputs && !singlePass) {
     const {
       output: [sanityCheck],
     } = await createBundle(options, { ...rollupOptions, input: expectedDts });

@@ -25,6 +25,11 @@ export interface Options {
    * If set, export the .d.ts as an ambient module declaration (`global`).
    */
   exportAsGlobalNamespace?: boolean;
+  
+  /**
+   * If set, re-export all the top-level classes
+   */
+  reExportSymbols?: boolean;
 }
 
 const plugin: PluginImpl<Options> = (options = {}) => {

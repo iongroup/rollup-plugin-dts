@@ -14,7 +14,7 @@ interface Export {
 export class GlobalNamespaceExporter {
     private code!: MagicString;
 
-    constructor(private sourceFile: ts.SourceFile) {
+    constructor(private sourceFile: ts.SourceFile, private reExportSymbols?: boolean) {
     }
 
     private findExports() {
@@ -145,7 +145,6 @@ export class GlobalNamespaceExporter {
             }
         }
 
-        let hasExports = false;
         for (const exp of exports) {
             for (const node of this.sourceFile.statements as ts.NodeArray<ts.Statement & { $isExported?: boolean }>) {
                 const name = (node as unknown as ts.NamedDeclaration).name;
@@ -153,11 +152,12 @@ export class GlobalNamespaceExporter {
                     continue;
                 }
 
-                // Fix: TS4023: Exported variable 't1' has or is using name 'Class1' from external module but cannot be named
-                if (name.getText() === exp.exportedName && !node.$isExported && ts.isClassDeclaration(node)) {
-                    this.code.appendLeft(node.getStart(), "export ");
-                    (node as ts.Statement & { $isExported?: boolean }).$isExported = true;
-                    hasExports = true;
+                if (this.reExportSymbols) {
+                    // Fix: TS4023: Exported variable 't1' has or is using name 'Class1' from external module but cannot be named
+                    if (name.getText() === exp.exportedName && !node.$isExported && ts.isClassDeclaration(node)) {
+                        this.code.appendLeft(node.getStart(), "export ");
+                        (node as ts.Statement & { $isExported?: boolean }).$isExported = true;
+                    }
                 }
             }
         }
@@ -167,14 +167,13 @@ export class GlobalNamespaceExporter {
             this.code.remove(stmt.getStart(), stmt.getEnd());
         }
 
-        let ret = this.code.toString();
-
-        if (!hasExports) {
-            // Add back an empty export { } to avoid TS2669 error when there are no export in the .d.ts
-            // https://stackoverflow.com/questions/57132428/augmentations-for-the-global-scope-can-only-be-directly-nested-in-external-modul
-            ret += "\nexport { }\n";
+        // Add an empty export to make the module a ES module
+        const ret = this.code.toString();
+        let addExport = false;
+        if (!this.reExportSymbols) {
+            const hasImports = /^import /gm.test(ret);
+            addExport = !hasImports;
         }
-
-        return ret;
+        return ret + (addExport ? "export { }\n" : "");
     }
 }
