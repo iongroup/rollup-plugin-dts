@@ -68,7 +68,7 @@ export const transform: PluginImpl<Options> = (dtsOptions) => {
         exports: "named",
         compact: false,
         freeze: true,
-        interop: false,
+        interop: "auto",
         namespaceToStringTag: false,
         strict: false,
       };
