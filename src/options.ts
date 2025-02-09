@@ -18,6 +18,10 @@ export interface Options {
    * Path to tsconfig.json, by default, will try to load 'tsconfig.json'
    */
   tsconfig?: string;
+  /**
+   * If set, export the .d.ts as an ambient module declaration (`global`).
+   */
+  exportAsGlobalNamespace?: boolean;
 }
 
 export function resolveDefaultOptions(options: Options) {
@@ -25,6 +29,7 @@ export function resolveDefaultOptions(options: Options) {
     ...options,
     compilerOptions: options.compilerOptions ?? {},
     respectExternal: options.respectExternal ?? false,
+    exportAsGlobalNamespace: options.exportAsGlobalNamespace ?? false
   };
 }
 

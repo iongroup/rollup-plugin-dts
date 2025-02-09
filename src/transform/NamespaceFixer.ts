@@ -226,7 +226,7 @@ export class NamespaceFixer {
   }
 }
 
-function renderTypeParams(typeParameters?: ts.NodeArray<ts.TypeParameterDeclaration>) {
+export function renderTypeParams(typeParameters?: ts.NodeArray<ts.TypeParameterDeclaration>) {
   if (!typeParameters || !typeParameters.length) {
     return { in: "", out: "" };
   }

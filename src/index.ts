@@ -62,8 +62,8 @@ function getModule(
 }
 
 const plugin: PluginImpl<Options> = (options = {}) => {
-  const transformPlugin = transform();
   const ctx: DtsPluginContext = { programs: [], resolvedOptions: resolveDefaultOptions(options) };
+  const transformPlugin = transform(ctx.resolvedOptions);
 
   return {
     name: "dts",

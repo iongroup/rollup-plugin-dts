@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "declaration": true,
+        "moduleResolution": "node",
+        "esModuleInterop": true
+    },
+    "files": [
+        "index.ts"
+    ]
+  }
+  
