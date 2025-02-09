@@ -121,7 +121,7 @@ export class GlobalNamespaceExporter {
             for (const exp of exports.filter(exp => exp.parentModule === node)) {
                 const declarationList = declarations.get(exp.localName);
                 if (!declarationList) {
-                    throw new Error(`Can't find any declaration called ${exp.localName}, exported in module "${node.name.getText()}"`);
+                    throw new Error(`Can't find any declaration called ${exp.localName}, exported in module "${node.name.getText()}". This can happen if there is a symbol with the same name export in different namespaces.`);
                 }
                 for (const declaration of declarationList) {
                     if (ts.isTypeAliasDeclaration(declaration)) {
