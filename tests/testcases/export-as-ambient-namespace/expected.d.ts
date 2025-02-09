@@ -17,3 +17,4 @@ declare global { namespace foo {
     export const FooC: typeof foo_d_FooC;
  
 } }
+export {  }
