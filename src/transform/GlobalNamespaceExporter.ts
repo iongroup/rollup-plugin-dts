@@ -14,7 +14,7 @@ interface Export {
 export class GlobalNamespaceExporter {
     private code!: MagicString;
 
-    constructor(private sourceFile: ts.SourceFile, private reExportSymbols?: boolean) {
+    constructor(private readonly sourceFile: ts.SourceFile) {
     }
 
     private findExports() {
@@ -145,20 +145,10 @@ export class GlobalNamespaceExporter {
             }
         }
 
-        for (const exp of exports) {
-            for (const node of this.sourceFile.statements as ts.NodeArray<ts.Statement & { $isExported?: boolean }>) {
-                const name = (node as unknown as ts.NamedDeclaration).name;
-                if (!name || !name.getText()) {
-                    continue;
-                }
-
-                if (this.reExportSymbols) {
-                    // Fix: TS4023: Exported variable 't1' has or is using name 'Class1' from external module but cannot be named
-                    if (name.getText() === exp.exportedName && !node.$isExported && ts.isClassDeclaration(node)) {
-                        this.code.appendLeft(node.getStart(), "export ");
-                        (node as ts.Statement & { $isExported?: boolean }).$isExported = true;
-                    }
-                }
+        for (const node of this.sourceFile.statements as ts.NodeArray<ts.Statement & { $isExported?: boolean }>) {
+            const name = (node as unknown as ts.NamedDeclaration).name;
+            if (!name?.getText()) {
+                continue;
             }
         }
 
@@ -169,11 +159,7 @@ export class GlobalNamespaceExporter {
 
         // Add an empty export to make the module a ES module
         const ret = this.code.toString();
-        let addExport = false;
-        if (!this.reExportSymbols) {
-            const hasImports = /^import /gm.test(ret);
-            addExport = !hasImports;
-        }
-        return ret + (addExport ? "export { }\n" : "");
+        const hasImports = /^import /gm.test(ret);
+        return ret + (!hasImports ? "export { }\n" : "");
     }
 }

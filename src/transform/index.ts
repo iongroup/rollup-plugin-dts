@@ -99,7 +99,7 @@ export const transform: PluginImpl<Options> = (dtsOptions) => {
       const fixer = new NamespaceFixer(parse(chunk.fileName, code));
       code = fixer.fix();
       if (dtsOptions!.exportAsGlobalNamespace) {
-        const fixer2 = new GlobalNamespaceExporter(parse(chunk.fileName, code), dtsOptions!.reExportSymbols);
+        const fixer2 = new GlobalNamespaceExporter(parse(chunk.fileName, code));
         code = fixer2.fix();
       }
 
