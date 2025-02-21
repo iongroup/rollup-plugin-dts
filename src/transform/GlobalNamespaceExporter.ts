@@ -50,10 +50,17 @@ export class GlobalNamespaceExporter {
         return { exports, exportStatements };
     }
 
+    /**
+     * Collect anything about interface, types and classes
+     */
     private getAllDeclarations() {
         const declarations = new Map<string, Array<ts.Statement>>();
         for (const stmt of this.sourceFile.statements) {
+            console.log(stmt.getText());
             let localName: string = "";
+            if (ts.isInterfaceDeclaration(stmt)) {
+                localName = stmt.name.getText();
+            }
             if (ts.isTypeAliasDeclaration(stmt)) {
                 localName = stmt.name.getText();
             } else if (ts.isVariableStatement(stmt)) {
@@ -124,7 +131,7 @@ export class GlobalNamespaceExporter {
                     throw new Error(`Can't find any declaration called ${exp.localName}, exported in module "${node.name.getText()}". This can happen if there is a symbol with the same name export in different namespaces.`);
                 }
                 for (const declaration of declarationList) {
-                    if (ts.isTypeAliasDeclaration(declaration)) {
+                    if (ts.isTypeAliasDeclaration(declaration) || ts.isInterfaceDeclaration(declaration)) {
                         const typeParams = renderTypeParams(declaration.typeParameters);
                         this.code.appendRight(body!.getStart() - 1, `    export type ${exp.exportedName}${typeParams.in} = ${exp.localName}${typeParams.out};\n`);
                     } else if (ts.isVariableStatement(declaration)) {
