@@ -252,7 +252,8 @@ class Transformer {
     if (ts.isImportEqualsDeclaration(node)) {
       // assume its like `import default`
       if (!ts.isExternalModuleReference(node.moduleReference)) {
-        throw new UnsupportedSyntaxError(node, "ImportEquals should have a literal source.");
+        //throw new UnsupportedSyntaxError(node, "ImportEquals should have a literal source.");
+        return;
       }
       this.pushStatement(
         withStartEnd(
