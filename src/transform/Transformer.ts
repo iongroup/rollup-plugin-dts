@@ -222,7 +222,7 @@ class Transformer {
           {
             type: "ExportAllDeclaration",
             source,
-            exported: createIdentifier(node.exportClause.name),
+            exported: createIdentifier(node.exportClause.name as ts.Identifier),
           },
           node,
         ),
@@ -301,7 +301,7 @@ class Transformer {
     if (ts.isNamedImports(node)) {
       return node.elements.map((el) => {
         const local = createIdentifier(el.name);
-        const imported = el.propertyName ? createIdentifier(el.propertyName) : local;
+        const imported = el.propertyName ? createIdentifier(el.propertyName as ts.Identifier) : local;
         return {
           type: "ImportSpecifier",
           local,
@@ -318,11 +318,11 @@ class Transformer {
   }
 
   convertExportSpecifier(node: ts.ExportSpecifier): ESTree.ExportSpecifier {
-    const exported = createIdentifier(node.name);
+    const exported = createIdentifier(node.name as ts.Identifier);
     return {
       type: "ExportSpecifier",
       exported: exported,
-      local: node.propertyName ? createIdentifier(node.propertyName) : exported,
+      local: node.propertyName ? createIdentifier(node.propertyName as ts.Identifier) : exported,
     };
   }
 }

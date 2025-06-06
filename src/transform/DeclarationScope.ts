@@ -416,7 +416,7 @@ export class DeclarationScope {
           }
           for (const decl of stmt.exportClause.elements) {
             const id = decl.propertyName || decl.name;
-            this.pushIdentifierReference(id);
+            this.pushIdentifierReference(id as ts.Identifier);
           }
         }
       } else {
